@@ -1,4 +1,4 @@
-# Two Truths and a Lie
+# Two Truths and one Lie
 
 An interactive post-type game for Reddit communities! Install the app and create engaging posts where users can share two truths and one lie about themselves, letting others guess which statement is the lie. Perfect for community bonding, icebreakers, or just having fun!
 
@@ -15,7 +15,7 @@ An interactive post-type game for Reddit communities! Install the app and create
 
 ### Creating a Post
 1. Install the app from this page
-2. Click the subreddit menu and select "Create Two Truths and a Lie"
+2. Click the subreddit menu and select "Create Two truths and one lie"
 3. Enter your two true statements and one lie
 4. Submit and share with your community!
 

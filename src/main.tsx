@@ -7,13 +7,13 @@ Devvit.configure({
   realtime: true
 });
 
-interface TwoTruthsAndALieProps {
+interface TwoTruthsAndOneLieProps {
   truth1: string;
   truth2: string;
   lie: string;
 }
 
-interface PostData extends TwoTruthsAndALieProps {
+interface PostData extends TwoTruthsAndOneLieProps {
   votes: number[];
 }
 
@@ -22,7 +22,7 @@ const Header = () => (
     <hstack height='32px' alignment='middle'>
       <spacer size='medium' />
       <text size='small' weight='bold' color='neutral-content'>
-        Two Truths and a Lie
+        Two truths and one lie
       </text>
     </hstack>
     <hstack height='1px' />
@@ -42,8 +42,8 @@ const Footer = (props: {children?: Devvit.ElementChildren}) => (
 )
 
 Devvit.addCustomPostType({
-  name: 'Two Truths and a Lie',
-  height: 'regular',
+  name: 'Two truths and one lie',
+  height: 'tall',
   render: (context) => {
     const postId = context.postId || '';
 
@@ -85,6 +85,19 @@ Devvit.addCustomPostType({
       }
     });
 
+    // Get OP's username
+    const [opUsername] = context.useState(async () => {
+      try {
+        const creatorId = await context.redis.hGet(`post:${postId}`, 'creatorId');
+        if (!creatorId) return null;
+        const user = await context.reddit.getUserById(creatorId);
+        return user?.username;
+      } catch (error) {
+        console.error('Error fetching OP username:', error);
+        return null;
+      }
+    });
+
     // Check if user has already voted
     const [hasVoted, setHasVoted] = context.useState(async () => {
       if (!context.userId) return false;
@@ -95,7 +108,7 @@ Devvit.addCustomPostType({
     if (!postData?.truth1 || !postData?.truth2 || !postData?.lie) {
       return (
         <vstack padding="medium">
-          <text>Loading Two Truths and a Lie...</text>
+          <text>Loading Two truths and one lie...</text>
         </vstack>
       );
     }
@@ -117,54 +130,6 @@ Devvit.addCustomPostType({
     const [reveal, setReveal] = context.useState(isRevealed);
 
     const totalVotes = votes.reduce((acc: number, val: number) => acc + val, 0);
-
-    const VotingScreen = (
-      <vstack padding='medium' alignment='start' gap='medium' grow>
-        {shuffled.map((item: { text: string }, index: number) => (
-          <hstack
-            alignment='middle'
-            height='32px'
-            padding='small'
-            onPress={() => setSelection(index)}
-          >
-            <icon
-              name={
-                selection === index ? 'radio-button-fill' : 'radio-button-outline'
-              }
-            />
-            <spacer size='small' />
-            <text>{item.text}</text>
-          </hstack>
-        ))}
-      </vstack>
-    );
-
-    const ResultsScreen = (
-      <vstack alignment='start' gap='small' padding='medium' grow>
-        {shuffled.map((item: { text: string; index: number }, displayIndex: number) => {
-          const percentage = totalVotes ? Math.round((votes[item.index] / totalVotes) * 100) : 0;
-          const isLie = item.text === lie;
-          return (
-            <vstack width='100%' gap='small'>
-              <hstack gap='medium' alignment='middle'>
-                <text weight='bold'>{votes[item.index]}</text>
-                <text>{item.text}</text>
-                {isLie && (isRevealed || reveal) && (
-                  <text color='red' weight='bold'> (Lie!)</text>
-                )}
-              </hstack>
-              <hstack
-                height='8px'
-                width={`${percentage}%`}
-                borderColor={isLie && (reveal || isRevealed) ? 'red' : 'secondary'}
-                backgroundColor={isLie && (reveal || isRevealed) ? 'red' : 'green'}
-                cornerRadius='small'
-              />
-            </vstack>
-          );
-        })}
-      </vstack>
-    );
 
     const handleVote = async () => {
       if (selection !== null && context.userId) {
@@ -195,30 +160,107 @@ Devvit.addCustomPostType({
       setReveal(true);
     };
 
+    const VotingScreen = (
+      <vstack padding='medium' alignment='start' gap='medium' grow>
+        {opUsername ? (
+          <hstack gap='small' alignment='middle'>
+            <text size='small'>Posted by </text>
+            <text 
+              size='small' 
+              color='link' 
+              onPress={() => context.ui.navigateTo(`https://reddit.com/user/${opUsername}`)}
+            >
+              u/{opUsername}
+            </text>
+          </hstack>
+        ) : null}
+        {shuffled.map((item: { text: string }, index: number) => (
+          <hstack
+            alignment='middle'
+            height='32px'
+            padding='small'
+            onPress={() => setSelection(index)}
+          >
+            <icon
+              name={
+                selection === index ? 'radio-button-fill' : 'radio-button-outline'
+              }
+            />
+            <spacer size='small' />
+            <text>{item.text}</text>
+          </hstack>
+        ))}
+        <spacer size='small' />
+        {!hasVoted && !isOP && (
+          <button
+            appearance='primary'
+            size='small'
+            disabled={selection === null}
+            onPress={handleVote}
+          >
+            Submit Guess
+          </button>
+        )}
+      </vstack>
+    );
+
+    const ResultsScreen = (
+      <vstack alignment='start' gap='small' padding='medium' grow>
+        {opUsername ? (
+          <hstack gap='small' alignment='middle'>
+            <text size='small'>Posted by </text>
+            <text 
+              size='small' 
+              color='link' 
+              onPress={() => context.ui.navigateTo(`https://reddit.com/user/${opUsername}`)}
+            >
+              u/{opUsername}
+            </text>
+          </hstack>
+        ) : null}
+        {shuffled.map((item: { text: string; index: number }, displayIndex: number) => {
+          const percentage = totalVotes ? Math.round((votes[item.index] / totalVotes) * 100) : 0;
+          const isLie = item.text === lie;
+          return (
+            <vstack width='100%' gap='small'>
+              <hstack gap='medium' alignment='middle'>
+                <text weight='bold'>{votes[item.index]}</text>
+                <text>{item.text}</text>
+                {isLie && (isRevealed || reveal) && (
+                  <text color='red' weight='bold'> (Lie!)</text>
+                )}
+              </hstack>
+              <hstack
+                height='8px'
+                width={`${percentage}%`}
+                borderColor={isLie && (reveal || isRevealed) ? 'red' : 'secondary'}
+                backgroundColor={isLie && (reveal || isRevealed) ? 'red' : 'green'}
+                cornerRadius='small'
+              />
+            </vstack>
+          );
+        })}
+        <spacer size='small' />
+        {(hasVoted || isOP) && isOP && !isRevealed && (
+          <button
+            appearance='secondary'
+            size='small'
+            onPress={handleReveal}
+          >
+            Reveal the Lie
+          </button>
+        )}
+      </vstack>
+    );
+
     return (
       <vstack height='100%'>
         <Header />
         {(hasVoted || isOP) ? ResultsScreen : VotingScreen}
         <Footer>
-          {!hasVoted && !isOP && (
-            <button
-              appearance='primary'
-              size='small'
-              disabled={selection === null}
-              onPress={handleVote}
-            >
-              Submit Guess
-            </button>
-          )}
-          {(hasVoted || isOP) && isOP && !isRevealed && (
-            <button
-              appearance='secondary'
-              size='small'
-              onPress={handleReveal}
-            >
-              Reveal the Lie
-            </button>
-          )}
+          <text color='neutral-content-weak' size='small'>
+            Guess the lie!
+          </text>
         </Footer>
       </vstack>
     );
@@ -228,7 +270,7 @@ Devvit.addCustomPostType({
 // Create a form for entering truths and lie
 const createTwoTruthsForm = Devvit.createForm(
   {
-    title: 'Create Two Truths and a Lie',
+    title: 'Create Two truths and one lie',
     fields: [
       { name: 'truth1', label: 'First Truth', type: 'string', required: true },
       { name: 'truth2', label: 'Second Truth', type: 'string', required: true },
@@ -249,11 +291,11 @@ const createTwoTruthsForm = Devvit.createForm(
     try {
       // Create the post with our custom post type
       const post = await context.reddit.submitPost({
-        title: 'Two Truths and a Lie',
+        title: 'Two truths and one lie',
         subredditName: currentSubreddit.name,
         preview: (
           <vstack padding="medium">
-            <text>Loading Two Truths and a Lie...</text>
+            <text>Loading Two truths and one lie...</text>
           </vstack>
         )
       });
@@ -271,7 +313,7 @@ const createTwoTruthsForm = Devvit.createForm(
         creatorId: context.userId || ''
       });
 
-      context.ui.showToast('Created Two Truths and a Lie post!');
+      context.ui.showToast('Created Two truths and one lie post!');
       
       // Navigate to the newly created post
       context.ui.navigateTo(post);
@@ -285,7 +327,7 @@ const createTwoTruthsForm = Devvit.createForm(
 // Add menu item to create new posts
 Devvit.addMenuItem({
   location: 'subreddit',
-  label: 'Create Two Truths and a Lie',
+  label: 'Create Two truths and one lie',
   onPress: async (_, context) => {
     try {
       await context.ui.showForm(createTwoTruthsForm);
