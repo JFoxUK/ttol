@@ -32,6 +32,6 @@ local database — state is stored in Reddit-hosted Redis at runtime.
 require interactive Reddit OAuth and a test subreddit. Environment readiness is proven by
 dependency install + type-check of `src/`, not by launching the app.
 
-If a human explicitly asks to playtest: `devvit login` then `devvit playtest <subreddit>`
-(subreddit must have <200 members and be moderated by the logged-in account). Session tokens live
-under `~/.devvit`; there is no token/env-var auth in 0.11.10.
+The app's test / install subreddit is **[r/ttaal](https://www.reddit.com/r/ttaal)**. If a human
+explicitly asks to playtest: `devvit login` then `devvit playtest ttaal`. Session tokens live under
+`~/.devvit`; there is no token/env-var auth in 0.11.10.
