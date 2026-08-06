@@ -137,8 +137,15 @@ export const buildGameState = async (postId: string): Promise<GameState> => {
   const statements = [
     { id: 0 as StatementId, text: game.truth1, isLie: false },
     { id: 1 as StatementId, text: game.truth2, isLie: false },
-    { id: 2 as StatementId, text: game.lie, isLie: true },
-  ];
+    { id: 2 as StatementId, text: game.lie, isLie: false },
+  ].map((statement) =>
+    game.isRevealed
+      ? {
+          ...statement,
+          isLie: statement.id === 2,
+        }
+      : statement
+  );
 
   return {
     postId,
