@@ -48,20 +48,6 @@ const setupSteps = [
   },
 ] as const;
 
-function FieldTip({ label, tip }: { label: string; tip: string }) {
-  return (
-    <span className="field-tip-row">
-      <span>{label}</span>
-      <span className="tip" tabIndex={0} aria-label={tip}>
-        ?
-        <span className="tip-bubble" role="tooltip">
-          {tip}
-        </span>
-      </span>
-    </span>
-  );
-}
-
 async function callApi<T extends ApiResponse>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -295,10 +281,7 @@ export function App() {
               {step === 0 ? (
                 <div className="field-grid compact">
                   <label>
-                    <FieldTip
-                      label="Title"
-                      tip="The headline for this post, e.g. “Travel stories” or “College edition”."
-                    />
+                    Title
                     <input
                       autoFocus
                       value={setup.title}
@@ -306,30 +289,24 @@ export function App() {
                       placeholder="e.g. Two truths and one lie"
                       onChange={(event) => updateSetup('title', event.target.value)}
                     />
-                    <span className="field-help">Shown at the top of the game for everyone.</span>
+                    <span className="field-help">The headline shown at the top of the game.</span>
                   </label>
                   <label>
-                    <FieldTip
-                      label="Theme"
-                      tip="Optional category that helps set the vibe, like food, work, or dating."
-                    />
+                    Theme
                     <input
                       value={setup.theme}
                       maxLength={40}
                       placeholder="Optional — e.g. Travel"
                       onChange={(event) => updateSetup('theme', event.target.value)}
                     />
-                    <span className="field-help">Appears as a small tag. Skip if you don’t need one.</span>
+                    <span className="field-help">Optional category tag, like food, work, or dating.</span>
                   </label>
                 </div>
               ) : null}
 
               {step === 1 ? (
                 <label className="wizard-field">
-                  <FieldTip
-                    label="Truth #1"
-                    tip="Something true about you. Other people will try to guess which statement is fake."
-                  />
+                  Truth #1
                   <input
                     autoFocus
                     value={setup.truth1}
@@ -337,16 +314,13 @@ export function App() {
                     placeholder="e.g. I have lived in three countries"
                     onChange={(event) => updateSetup('truth1', event.target.value)}
                   />
-                  <span className="field-help">Must be true. Aim for something interesting but not obvious.</span>
+                  <span className="field-help">A true statement about you. Keep it interesting but believable.</span>
                 </label>
               ) : null}
 
               {step === 2 ? (
                 <label className="wizard-field">
-                  <FieldTip
-                    label="Truth #2"
-                    tip="A second true statement. Keep it different from Truth #1 so the lie isn’t easy to spot."
-                  />
+                  Truth #2
                   <input
                     autoFocus
                     value={setup.truth2}
@@ -354,16 +328,13 @@ export function App() {
                     placeholder="e.g. I once met my favourite band"
                     onChange={(event) => updateSetup('truth2', event.target.value)}
                   />
-                  <span className="field-help">Also true. Mix surprising with everyday for better guessing.</span>
+                  <span className="field-help">Another true statement, different from the first.</span>
                 </label>
               ) : null}
 
               {step === 3 ? (
                 <label className="wizard-field">
-                  <FieldTip
-                    label="The lie"
-                    tip="This is the fake one. Make it sound real so people have a hard time spotting it."
-                  />
+                  The lie
                   <input
                     autoFocus
                     value={setup.lie}
@@ -371,7 +342,7 @@ export function App() {
                     placeholder="e.g. I am afraid of roller coasters"
                     onChange={(event) => updateSetup('lie', event.target.value)}
                   />
-                  <span className="field-help">False on purpose. You’ll reveal this later for everyone.</span>
+                  <span className="field-help">A false statement that still sounds real. You’ll reveal it later.</span>
                 </label>
               ) : null}
 
