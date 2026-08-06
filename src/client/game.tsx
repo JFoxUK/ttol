@@ -153,82 +153,83 @@ export function App() {
 
   return (
     <main className="shell">
-      <section className="card hero">
-        <div className="badge-row">
-          <span className="badge">u/{game.creatorUsername ?? 'unknown'}</span>
-          {game.theme ? <span className="badge">{game.theme}</span> : null}
-          <span className="badge">{game.totalVotes} guesses locked in</span>
-        </div>
-
-        <div>
-          <h1>{game.title}</h1>
-          <p className="muted tiny">
-            Pick the lie. Results unlock right after your guess, and the creator can reveal the
-            answer once the round is ready.
-          </p>
-        </div>
-
-        {error ? <p className="error">{error}</p> : null}
-
+      <section className={`card hero ${game.canEdit ? 'setup-card' : ''}`}>
         {game.canEdit ? (
           <>
-            <div>
-              <h3>Finish setting up your game</h3>
-              <p className="muted tiny">
-                Improvement from the old version: creators can now create the post first, then
-                finish authoring it inside the game with better validation.
-              </p>
+            <div className="setup-header">
+              <div>
+                <h1>Set up your game</h1>
+                <p className="muted tiny">Write two truths and one lie. Keep each statement under 140 characters.</p>
+              </div>
+              <span className="badge">u/{game.creatorUsername ?? 'unknown'}</span>
             </div>
 
-            <div className="field-grid">
-              <label>
-                Title
-                <input
-                  value={setup.title}
-                  maxLength={90}
-                  onChange={(event) => setSetup((current) => ({ ...current, title: event.target.value }))}
-                />
-              </label>
-              <label>
-                Theme (optional)
-                <input
-                  value={setup.theme}
-                  maxLength={40}
-                  placeholder="Icebreaker, travel, college, food..."
-                  onChange={(event) => setSetup((current) => ({ ...current, theme: event.target.value }))}
-                />
-              </label>
+            <div className="field-grid compact">
+              <div className="field-row">
+                <label>
+                  Title
+                  <input
+                    value={setup.title}
+                    maxLength={90}
+                    onChange={(event) => {
+                      setError(null);
+                      setSetup((current) => ({ ...current, title: event.target.value }));
+                    }}
+                  />
+                </label>
+                <label>
+                  Theme
+                  <input
+                    value={setup.theme}
+                    maxLength={40}
+                    placeholder="Optional"
+                    onChange={(event) => {
+                      setError(null);
+                      setSetup((current) => ({ ...current, theme: event.target.value }));
+                    }}
+                  />
+                </label>
+              </div>
               <label>
                 Truth #1
-                <textarea
+                <input
                   value={setup.truth1}
                   maxLength={140}
-                  onChange={(event) =>
-                    setSetup((current) => ({ ...current, truth1: event.target.value }))
-                  }
+                  placeholder="A true statement"
+                  onChange={(event) => {
+                    setError(null);
+                    setSetup((current) => ({ ...current, truth1: event.target.value }));
+                  }}
                 />
               </label>
               <label>
                 Truth #2
-                <textarea
+                <input
                   value={setup.truth2}
                   maxLength={140}
-                  onChange={(event) =>
-                    setSetup((current) => ({ ...current, truth2: event.target.value }))
-                  }
+                  placeholder="Another true statement"
+                  onChange={(event) => {
+                    setError(null);
+                    setSetup((current) => ({ ...current, truth2: event.target.value }));
+                  }}
                 />
               </label>
               <label>
-                Lie
-                <textarea
+                The lie
+                <input
                   value={setup.lie}
                   maxLength={140}
-                  onChange={(event) => setSetup((current) => ({ ...current, lie: event.target.value }))}
+                  placeholder="A believable lie"
+                  onChange={(event) => {
+                    setError(null);
+                    setSetup((current) => ({ ...current, lie: event.target.value }));
+                  }}
                 />
               </label>
             </div>
 
-            <div className="footer-actions">
+            <div className="footer-actions sticky-actions">
+              {error ? <p className="error action-error">{error}</p> : null}
               <button className="primary" disabled={saving} onClick={submitSetup}>
                 {saving ? 'Saving...' : 'Publish game'}
               </button>
@@ -241,91 +242,97 @@ export function App() {
               The post exists, but the creator has not finished writing their truths and lie yet.
             </p>
           </div>
-        ) : !game.hasVoted && !game.canReveal ? (
-          <>
-            <div className="statement-list">
-              {orderedStatements.map((statement) => (
-                <button
-                  key={statement.id}
-                  className={`statement-card ${selection === statement.id ? 'selected' : ''}`}
-                  onClick={() => setSelection(statement.id)}
-                >
-                  <div className="statement-title">
-                    <strong>
-                      {selection === statement.id ? 'Your pick' : 'Choose this'}
-                    </strong>
-                    <span className="badge">{statement.id === 2 ? '???' : 'Maybe true'}</span>
-                  </div>
-                  <div>{statement.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <div className="footer-actions">
-              <button className="primary" disabled={selection === null || saving} onClick={submitVote}>
-                {saving ? 'Locking in...' : 'Lock in my guess'}
-              </button>
-            </div>
-          </>
         ) : (
           <>
-            <div className="statement-list">
-              {orderedStatements.map((statement) => {
-                const votes = game.voteCounts[statement.id];
-                const percentage = game.totalVotes ? Math.round((votes / game.totalVotes) * 100) : 0;
-                const isUserChoice = game.userVote === statement.id;
-                const revealLie = game.isRevealed && statement.isLie;
+            <div className="badge-row">
+              <span className="badge">u/{game.creatorUsername ?? 'unknown'}</span>
+              {game.theme ? <span className="badge">{game.theme}</span> : null}
+              <span className="badge">{game.totalVotes} guesses locked in</span>
+            </div>
 
-                return (
-                  <div
-                    key={statement.id}
-                    className={`statement-card ${isUserChoice ? 'selected' : ''} ${revealLie ? 'correct' : ''}`}
-                  >
-                    <div className="statement-title">
-                      <strong>
-                        {isUserChoice ? 'Your guess' : 'Community result'}
-                      </strong>
-                      <span className="badge">
-                        {votes} vote{votes === 1 ? '' : 's'} - {percentage}%
-                      </span>
-                    </div>
-                    <div>{statement.text}</div>
-                    {revealLie ? (
-                      <p className="badge" style={{ marginTop: '0.8rem' }}>
-                        The creator revealed this was the lie.
-                      </p>
-                    ) : null}
-                    <div className="bar">
-                      <span className={revealLie ? 'lie' : ''} style={{ width: `${percentage}%` }} />
-                    </div>
+            <div>
+              <h1>{game.title}</h1>
+              <p className="muted tiny">Pick the lie. Results unlock after your guess.</p>
+            </div>
+
+            {!game.hasVoted && !game.canReveal ? (
+              <>
+                <div className="statement-list compact">
+                  {orderedStatements.map((statement) => (
+                    <button
+                      key={statement.id}
+                      className={`statement-card ${selection === statement.id ? 'selected' : ''}`}
+                      onClick={() => setSelection(statement.id)}
+                    >
+                      <div className="statement-title">
+                        <strong>{selection === statement.id ? 'Your pick' : 'Guess'}</strong>
+                      </div>
+                      <div>{statement.text}</div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="footer-actions sticky-actions">
+                  {error ? <p className="error action-error">{error}</p> : null}
+                  <button className="primary" disabled={selection === null || saving} onClick={submitVote}>
+                    {saving ? 'Locking in...' : 'Lock in my guess'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="statement-list compact">
+                  {orderedStatements.map((statement) => {
+                    const votes = game.voteCounts[statement.id];
+                    const percentage = game.totalVotes ? Math.round((votes / game.totalVotes) * 100) : 0;
+                    const isUserChoice = game.userVote === statement.id;
+                    const revealLie = game.isRevealed && statement.isLie;
+
+                    return (
+                      <div
+                        key={statement.id}
+                        className={`statement-card ${isUserChoice ? 'selected' : ''} ${revealLie ? 'correct' : ''}`}
+                      >
+                        <div className="statement-title">
+                          <strong>{isUserChoice ? 'Your guess' : 'Result'}</strong>
+                          <span className="badge">
+                            {votes} · {percentage}%
+                          </span>
+                        </div>
+                        <div>{statement.text}</div>
+                        {revealLie ? <p className="lie-flag">This was the lie</p> : null}
+                        <div className="bar">
+                          <span className={revealLie ? 'lie' : ''} style={{ width: `${percentage}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="status-line">
+                  <p>
+                    {game.isRevealed
+                      ? userPickedLie
+                        ? 'Nice read — you found the lie.'
+                        : 'The lie is out.'
+                      : game.canReveal
+                        ? 'Ready when you are.'
+                        : 'Waiting on the creator reveal.'}
+                  </p>
+                </div>
+
+                {game.canReveal ? (
+                  <div className="footer-actions sticky-actions">
+                    {error ? <p className="error action-error">{error}</p> : null}
+                    <button className="danger" disabled={saving} onClick={reveal}>
+                      {saving ? 'Revealing...' : 'Reveal the lie'}
+                    </button>
                   </div>
-                );
-              })}
-            </div>
-
-            <div className="card" style={{ padding: '1rem 1.1rem' }}>
-              <h3 style={{ marginTop: 0 }}>
-                {game.isRevealed
-                  ? userPickedLie
-                    ? 'Nice read - you found the lie.'
-                    : 'The lie is out. Better luck next round.'
-                  : game.canReveal
-                    ? 'You can reveal the answer when you are ready.'
-                    : 'Results are live. Waiting on the creator reveal.'}
-              </h3>
-              <p className="muted tiny" style={{ marginBottom: 0 }}>
-                Improved from the old version: the statement order is stable per viewer, vote
-                submission is server-authoritative, and your own guess stays highlighted in results.
-              </p>
-            </div>
-
-            {game.canReveal ? (
-              <div className="footer-actions">
-                <button className="danger" disabled={saving} onClick={reveal}>
-                  {saving ? 'Revealing...' : 'Reveal the lie'}
-                </button>
-              </div>
-            ) : null}
+                ) : error ? (
+                  <p className="error action-error">{error}</p>
+                ) : null}
+              </>
+            )}
           </>
         )}
       </section>

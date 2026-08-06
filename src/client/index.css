@@ -11,9 +11,15 @@
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
+  overflow: hidden;
   background:
     radial-gradient(circle at top, rgba(255, 103, 58, 0.12), transparent 35%),
     linear-gradient(180deg, #171923 0%, #0f1014 100%);
@@ -29,7 +35,7 @@ textarea {
 button {
   border: 0;
   border-radius: 999px;
-  padding: 0.8rem 1.15rem;
+  padding: 0.7rem 1.05rem;
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -49,22 +55,39 @@ button:hover:not(:disabled) {
 
 .shell {
   width: 100%;
+  height: 100%;
   max-width: 840px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0.75rem;
+  display: flex;
+  align-items: stretch;
 }
 
 .card {
   background: rgba(23, 25, 35, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  width: 100%;
 }
 
 .hero {
   display: grid;
-  gap: 1rem;
-  padding: 1.25rem;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  height: 100%;
+  align-content: start;
+}
+
+.setup-card {
+  gap: 0.65rem;
+}
+
+.setup-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
 }
 
 .hero h1,
@@ -74,12 +97,17 @@ button:hover:not(:disabled) {
   margin: 0;
 }
 
+.hero h1 {
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
 .muted {
   color: #adb3c6;
 }
 
 .tiny {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .badge-row,
@@ -88,7 +116,7 @@ button:hover:not(:disabled) {
 .field-grid,
 .footer-actions {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.55rem;
   flex-wrap: wrap;
 }
 
@@ -98,9 +126,10 @@ button:hover:not(:disabled) {
   gap: 0.35rem;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
-  padding: 0.35rem 0.7rem;
+  padding: 0.28rem 0.65rem;
   color: #dce3ff;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .primary {
@@ -120,15 +149,21 @@ button:hover:not(:disabled) {
 
 .statement-list {
   display: grid;
-  gap: 0.9rem;
+  gap: 0.55rem;
+}
+
+.statement-list.compact .statement-card {
+  padding: 0.7rem 0.8rem;
+  border-radius: 14px;
 }
 
 .statement-card {
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
-  padding: 1rem;
+  padding: 0.85rem;
   text-align: left;
+  color: inherit;
 }
 
 .statement-card.selected {
@@ -143,17 +178,17 @@ button:hover:not(:disabled) {
 .statement-title {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: center;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.35rem;
 }
 
 .bar {
-  height: 0.6rem;
+  height: 0.45rem;
   border-radius: 999px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.08);
-  margin-top: 0.7rem;
+  margin-top: 0.5rem;
 }
 
 .bar > span {
@@ -169,11 +204,23 @@ button:hover:not(:disabled) {
 
 .field-grid {
   flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-grid.compact label {
+  gap: 0.28rem;
+  font-size: 0.85rem;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 0.5rem;
 }
 
 .field-grid label {
   display: grid;
-  gap: 0.45rem;
+  gap: 0.35rem;
   color: #dce3ff;
   font-weight: 600;
 }
@@ -181,15 +228,15 @@ button:hover:not(:disabled) {
 .field-grid input,
 .field-grid textarea {
   width: 100%;
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(8, 10, 14, 0.75);
   color: inherit;
-  padding: 0.8rem 0.95rem;
+  padding: 0.65rem 0.8rem;
 }
 
 .field-grid textarea {
-  min-height: 96px;
+  min-height: 72px;
   resize: vertical;
 }
 
@@ -198,13 +245,45 @@ button:hover:not(:disabled) {
   font-weight: 600;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 2rem 1rem;
+.action-error {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
-@media (min-width: 768px) {
-  .hero {
-    padding: 1.5rem;
+.sticky-actions {
+  margin-top: auto;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.35rem;
+}
+
+.status-line p {
+  margin: 0;
+  color: #dce3ff;
+  font-weight: 600;
+}
+
+.lie-flag {
+  margin: 0.45rem 0 0;
+  color: #ff99aa;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 1.5rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-header {
+    flex-direction: column;
   }
 }
