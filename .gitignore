@@ -1,5 +1,6 @@
 node_modules
 .yarn
+dist
 logs
 *.log
 npm-debug.log*

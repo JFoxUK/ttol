@@ -1,0 +1,210 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #0f1014;
+  color: #f5f7ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(255, 103, 58, 0.12), transparent 35%),
+    linear-gradient(180deg, #171923 0%, #0f1014 100%);
+}
+
+a,
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.15rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    opacity 120ms ease,
+    background 120ms ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.shell {
+  width: 100%;
+  max-width: 840px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.card {
+  background: rgba(23, 25, 35, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.hero {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.hero h1,
+.hero h2,
+.hero h3,
+.hero p {
+  margin: 0;
+}
+
+.muted {
+  color: #adb3c6;
+}
+
+.tiny {
+  font-size: 0.9rem;
+}
+
+.badge-row,
+.actions,
+.statements,
+.field-grid,
+.footer-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.35rem 0.7rem;
+  color: #dce3ff;
+  font-size: 0.9rem;
+}
+
+.primary {
+  background: linear-gradient(135deg, #ff6b3d, #ff8b55);
+  color: #0b0c10;
+}
+
+.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f5f7ff;
+}
+
+.danger {
+  background: linear-gradient(135deg, #ff3d6d, #ff6b88);
+  color: white;
+}
+
+.statement-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.statement-card {
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1rem;
+  text-align: left;
+}
+
+.statement-card.selected {
+  border-color: rgba(255, 139, 85, 0.8);
+  background: rgba(255, 107, 61, 0.15);
+}
+
+.statement-card.correct {
+  border-color: rgba(73, 214, 122, 0.85);
+}
+
+.statement-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+
+.bar {
+  height: 0.6rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  margin-top: 0.7rem;
+}
+
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7be495, #4ebd7d);
+}
+
+.bar > span.lie {
+  background: linear-gradient(90deg, #ff6b88, #ff3d6d);
+}
+
+.field-grid {
+  flex-direction: column;
+}
+
+.field-grid label {
+  display: grid;
+  gap: 0.45rem;
+  color: #dce3ff;
+  font-weight: 600;
+}
+
+.field-grid input,
+.field-grid textarea {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 10, 14, 0.75);
+  color: inherit;
+  padding: 0.8rem 0.95rem;
+}
+
+.field-grid textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.error {
+  color: #ff99aa;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .hero {
+    padding: 1.5rem;
+  }
+}

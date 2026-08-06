@@ -4,34 +4,38 @@
 
 ### What this project is
 This is a **Devvit** app (Reddit Developer Platform) — an interactive "Two truths and one lie"
-custom post type. It is a *blocks* app built on `@devvit/public-api@0.11.10`. The entire app lives
-in `src/main.tsx` and is configured via `devvit.yaml`. There is no web/server component and no
-local database — state is stored in Reddit-hosted Redis at runtime.
+custom post type. It has been migrated to **Devvit Web**:
+- `devvit.json` is the source of truth for app config.
+- `src/server/` contains the Hono + Devvit server runtime.
+- `src/client/` contains the inline splash and expanded game web entrypoints.
+- `src/shared/` contains shared API/types.
+
+There is still no standalone local database — runtime state is stored in Reddit-hosted Redis.
 
 ### Tooling / environment
-- The `devvit` CLI is installed globally at the version matching `@devvit/public-api`
-  (`devvit@0.11.10`). npm's global prefix is set to `~/.npm-global`, and `~/.npm-global/bin` is
+- The `devvit` CLI is installed globally at the app/tooling version (`devvit@0.13.11`). npm's
+  global prefix is set to `~/.npm-global`, and `~/.npm-global/bin` is
   added to `PATH` via `~/.bashrc`. If `devvit` is not found on `PATH` in a non-login shell, run
   `export PATH="$HOME/.npm-global/bin:$PATH"`.
-- Node is `v22.x`. `npm install` installs the runtime + `typescript` dev dependency.
+- Node is `v22.x`. `npm install` installs the full client/server toolchain (Vite, React, Hono,
+  Devvit Web packages, ESLint, TypeScript).
 
 ### Lint / type-check / build
-- There is **no** lint config, no test framework, and no `build`/`dev` npm script. The 0.11.10 CLI
-  has **no** standalone `build` command — bundling happens inside `devvit playtest` / `devvit upload`.
-- Type-checking is the offline validation step. Plain `npx tsc --noEmit` FAILS with
-  `Cannot find type definition file for 'vitest/globals'` because the extended base config
-  `@devvit/public-api/devvit.tsconfig.json` hardcodes `types: ["vitest/globals"]` (a Devvit test
-  convention) and `vitest` is not a dependency here. This is a config artifact, not a source error.
-  To type-check just the app source, use a throwaway config that overrides `types` to `[]`, e.g.
-  create `tsconfig.check.json` extending `./tsconfig.json` with `"types": []` + `"noEmit": true`
-  and run `npx tsc -p tsconfig.check.json` (source currently passes cleanly).
+- Use the package scripts:
+  - `npm run test:types`
+  - `npm run build`
+  - `npm run lint`
+- The current repo includes a small local type shim for `@devvit/web/client` because the runtime
+  exports work for Vite/build, but the package typings do not currently expose the `context` and
+  `requestExpandedMode` symbols cleanly through the aggregate entrypoint in this repo setup.
 
 ### Running the app
-**Do not attempt to run / playtest / upload the app in Cloud Agent sessions.** This is a Devvit
-(Reddit) game that only executes on Reddit's cloud via `devvit playtest` / `devvit upload`, which
-require interactive Reddit OAuth and a test subreddit. Environment readiness is proven by
-dependency install + type-check of `src/`, not by launching the app.
+This app still executes on Reddit's cloud via `devvit playtest` / `devvit upload`, but it now uses
+modern Devvit Web structure. In Cloud Agent sessions, offline validation is:
+- `npm run test:types`
+- `npm run build`
+- `npm run lint`
 
 The app's test / install subreddit is **[r/ttaal](https://www.reddit.com/r/ttaal)**. If a human
-explicitly asks to playtest: `devvit login` then `devvit playtest ttaal`. Session tokens live under
-`~/.devvit`; there is no token/env-var auth in 0.11.10.
+explicitly asks to playtest: `devvit login` then `npm run dev` (which maps to `devvit playtest ttaal`).
+Session tokens live under `~/.devvit`.
