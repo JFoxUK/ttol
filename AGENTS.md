@@ -26,11 +26,12 @@ local database — state is stored in Reddit-hosted Redis at runtime.
   create `tsconfig.check.json` extending `./tsconfig.json` with `"types": []` + `"noEmit": true`
   and run `npx tsc -p tsconfig.check.json` (source currently passes cleanly).
 
-### Running the app (requires Reddit credentials — external dependency)
-Devvit apps do **not** run locally standalone; they run on Reddit's cloud. To run/develop:
-1. `devvit login` — interactive Reddit OAuth (opens a browser; `--copy-paste` for a code flow).
-2. `devvit playtest <subreddit>` — uploads the app and hot-reloads on save. The subreddit must be a
-   test subreddit with **<200 members** that the logged-in account moderates.
-`devvit playtest` and `devvit upload` both prompt for OAuth immediately if not logged in, so a
-Reddit account + test subreddit are hard prerequisites for any real run. There is no token/env-var
-auth in 0.11.10; the session token is stored under `~/.devvit`.
+### Running the app
+**Do not attempt to run / playtest / upload the app in Cloud Agent sessions.** This is a Devvit
+(Reddit) game that only executes on Reddit's cloud via `devvit playtest` / `devvit upload`, which
+require interactive Reddit OAuth and a test subreddit. Environment readiness is proven by
+dependency install + type-check of `src/`, not by launching the app.
+
+If a human explicitly asks to playtest: `devvit login` then `devvit playtest <subreddit>`
+(subreddit must have <200 members and be moderated by the logged-in account). Session tokens live
+under `~/.devvit`; there is no token/env-var auth in 0.11.10.
