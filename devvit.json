@@ -33,6 +33,6 @@
     "build": "vite build"
   },
   "dev": {
-    "subreddit": "truth_and_lie_dev"
+    "subreddit": "ttaal"
   }
 }
