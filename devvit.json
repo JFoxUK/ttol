@@ -1,6 +1,12 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
   "name": "truth-and-lie",
+  "marketingAssets": {
+    "icon": "assets/icon.png"
+  },
+  "media": {
+    "dir": "assets"
+  },
   "post": {
     "dir": "dist/client",
     "entrypoints": {
