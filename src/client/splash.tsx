@@ -9,7 +9,6 @@ export function Splash() {
       <section className="card hero">
         <div className="badge-row">
           <span className="badge">Reddit party game</span>
-          <span className="badge">Now rebuilt for Devvit Web</span>
         </div>
         <div>
           <h2>Two truths and one lie</h2>
