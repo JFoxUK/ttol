@@ -28,25 +28,39 @@ type SetupStep = 0 | 1 | 2 | 3 | 4;
 const setupSteps = [
   {
     title: 'Name the round',
-    hint: 'Keep it short. Theme is optional.',
+    hint: 'This is what people see first on your post.',
   },
   {
     title: 'Truth #1',
-    hint: 'A true statement about yourself.',
+    hint: 'A real fact about you. Keep it short and believable.',
   },
   {
     title: 'Truth #2',
-    hint: 'Another true statement.',
+    hint: 'Another real fact. Make it different from the first.',
   },
   {
     title: 'The lie',
-    hint: 'Make it believable.',
+    hint: 'A false statement that still sounds plausible.',
   },
   {
     title: 'Ready to publish?',
-    hint: 'Check everything looks right.',
+    hint: 'Check everything looks right before sharing.',
   },
 ] as const;
+
+function FieldTip({ label, tip }: { label: string; tip: string }) {
+  return (
+    <span className="field-tip-row">
+      <span>{label}</span>
+      <span className="tip" tabIndex={0} aria-label={tip}>
+        ?
+        <span className="tip-bubble" role="tooltip">
+          {tip}
+        </span>
+      </span>
+    </span>
+  );
+}
 
 async function callApi<T extends ApiResponse>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -281,87 +295,108 @@ export function App() {
               {step === 0 ? (
                 <div className="field-grid compact">
                   <label>
-                    Title
+                    <FieldTip
+                      label="Title"
+                      tip="The headline for this post, e.g. “Travel stories” or “College edition”."
+                    />
                     <input
                       autoFocus
                       value={setup.title}
                       maxLength={90}
+                      placeholder="e.g. Two truths and one lie"
                       onChange={(event) => updateSetup('title', event.target.value)}
                     />
+                    <span className="field-help">Shown at the top of the game for everyone.</span>
                   </label>
                   <label>
-                    Theme
+                    <FieldTip
+                      label="Theme"
+                      tip="Optional category that helps set the vibe, like food, work, or dating."
+                    />
                     <input
                       value={setup.theme}
                       maxLength={40}
-                      placeholder="Optional"
+                      placeholder="Optional — e.g. Travel"
                       onChange={(event) => updateSetup('theme', event.target.value)}
                     />
+                    <span className="field-help">Appears as a small tag. Skip if you don’t need one.</span>
                   </label>
                 </div>
               ) : null}
 
               {step === 1 ? (
                 <label className="wizard-field">
-                  Truth #1
+                  <FieldTip
+                    label="Truth #1"
+                    tip="Something true about you. Other people will try to guess which statement is fake."
+                  />
                   <input
                     autoFocus
                     value={setup.truth1}
                     maxLength={140}
-                    placeholder="A true statement"
+                    placeholder="e.g. I have lived in three countries"
                     onChange={(event) => updateSetup('truth1', event.target.value)}
                   />
+                  <span className="field-help">Must be true. Aim for something interesting but not obvious.</span>
                 </label>
               ) : null}
 
               {step === 2 ? (
                 <label className="wizard-field">
-                  Truth #2
+                  <FieldTip
+                    label="Truth #2"
+                    tip="A second true statement. Keep it different from Truth #1 so the lie isn’t easy to spot."
+                  />
                   <input
                     autoFocus
                     value={setup.truth2}
                     maxLength={140}
-                    placeholder="Another true statement"
+                    placeholder="e.g. I once met my favourite band"
                     onChange={(event) => updateSetup('truth2', event.target.value)}
                   />
+                  <span className="field-help">Also true. Mix surprising with everyday for better guessing.</span>
                 </label>
               ) : null}
 
               {step === 3 ? (
                 <label className="wizard-field">
-                  The lie
+                  <FieldTip
+                    label="The lie"
+                    tip="This is the fake one. Make it sound real so people have a hard time spotting it."
+                  />
                   <input
                     autoFocus
                     value={setup.lie}
                     maxLength={140}
-                    placeholder="A believable lie"
+                    placeholder="e.g. I am afraid of roller coasters"
                     onChange={(event) => updateSetup('lie', event.target.value)}
                   />
+                  <span className="field-help">False on purpose. You’ll reveal this later for everyone.</span>
                 </label>
               ) : null}
 
               {step === 4 ? (
                 <div className="review-list">
                   <div className="review-item">
-                    <span className="muted tiny">Title</span>
+                    <span className="muted tiny">Title — post headline</span>
                     <strong>{normalize(setup.title)}</strong>
                   </div>
                   {normalize(setup.theme) ? (
                     <div className="review-item">
-                      <span className="muted tiny">Theme</span>
+                      <span className="muted tiny">Theme — optional category tag</span>
                       <strong>{normalize(setup.theme)}</strong>
                     </div>
                   ) : null}
                   <div className="review-item">
-                    <span className="muted tiny">Truth #1</span>
+                    <span className="muted tiny">Truth #1 — real statement</span>
                     <strong>{normalize(setup.truth1)}</strong>
                   </div>
                   <div className="review-item">
-                    <span className="muted tiny">Truth #2</span>
+                    <span className="muted tiny">Truth #2 — real statement</span>
                     <strong>{normalize(setup.truth2)}</strong>
                   </div>
                   <div className="review-item lie">
-                    <span className="muted tiny">The lie</span>
+                    <span className="muted tiny">The lie — fake statement to guess</span>
                     <strong>{normalize(setup.lie)}</strong>
                   </div>
                 </div>
