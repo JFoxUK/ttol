@@ -1,4 +1,4 @@
-import { redis, reddit } from '@devvit/web/server';
+import { context, redis, reddit } from '@devvit/web/server';
 import type { GameSetup, GameState, StatementId, StoredGame } from '../../shared/types';
 
 const DEFAULT_SETUP: GameSetup = {
@@ -16,6 +16,9 @@ const voteCountsKey = (postId: string) => `post:${postId}:voteCounts`;
 const voteKey = (postId: string, username: string) => `post:${postId}:vote:${username.toLowerCase()}`;
 
 const normalize = (value: string) => value.trim().replace(/\s+/g, ' ');
+
+const sameUser = (left: string | null | undefined, right: string | null | undefined) =>
+  Boolean(left && right && left.toLowerCase() === right.toLowerCase());
 
 const hashSeed = (value: string) => {
   let hash = 2166136261;
@@ -88,6 +91,7 @@ const parseStoredGame = (stored: Record<string, string>): StoredGame => ({
   truth1: stored.truth1 ?? DEFAULT_SETUP.truth1,
   truth2: stored.truth2 ?? DEFAULT_SETUP.truth2,
   lie: stored.lie ?? DEFAULT_SETUP.lie,
+  creatorId: stored.creatorId ?? '',
   creatorUsername: stored.creatorUsername ?? '',
   createdAt: stored.createdAt ?? new Date(0).toISOString(),
   isConfigured: stored.isConfigured === 'true',
@@ -103,10 +107,33 @@ const readVoteCounts = async (postId: string): Promise<Record<StatementId, numbe
   };
 };
 
-export const initializePost = async (postId: string, creatorUsername: string | null) => {
+const getViewerIdentity = async () => {
+  const username = (await reddit.getCurrentUsername()) ?? context.username ?? null;
+  return {
+    userId: context.userId ?? null,
+    username,
+  };
+};
+
+const isCreatorOf = (
+  game: StoredGame,
+  viewer: { userId: string | null; username: string | null }
+) => {
+  if (game.creatorId && viewer.userId && game.creatorId === viewer.userId) {
+    return true;
+  }
+
+  return sameUser(game.creatorUsername, viewer.username);
+};
+
+export const initializePost = async (
+  postId: string,
+  creator: { userId: string | null; username: string | null }
+) => {
   await redis.hSet(postKey(postId), {
     ...DEFAULT_SETUP,
-    creatorUsername: creatorUsername ?? '',
+    creatorId: creator.userId ?? '',
+    creatorUsername: creator.username ?? '',
     createdAt: new Date().toISOString(),
     isConfigured: 'false',
     isRevealed: 'false',
@@ -120,16 +147,17 @@ export const initializePost = async (postId: string, creatorUsername: string | n
 };
 
 export const buildGameState = async (postId: string): Promise<GameState> => {
-  const [stored, voteCounts, viewerUsername] = await Promise.all([
+  const [stored, voteCounts, viewer] = await Promise.all([
     redis.hGetAll(postKey(postId)),
     readVoteCounts(postId),
-    reddit.getCurrentUsername(),
+    getViewerIdentity(),
   ]);
 
   const game = parseStoredGame(stored ?? {});
-  const username = viewerUsername ?? null;
-  const canEdit = Boolean(username && username === game.creatorUsername && !game.isConfigured);
-  const canReveal = Boolean(username && username === game.creatorUsername && game.isConfigured && !game.isRevealed);
+  const username = viewer.username;
+  const isCreator = isCreatorOf(game, viewer);
+  const canEdit = Boolean(isCreator && !game.isConfigured);
+  const canReveal = Boolean(isCreator && game.isConfigured && !game.isRevealed);
   const savedVote = username ? await redis.get(voteKey(postId, username)) : null;
   const userVote = savedVote == null ? null : (Number.parseInt(savedVote, 10) as StatementId);
   const hasVoted = userVote !== null;
@@ -151,6 +179,7 @@ export const buildGameState = async (postId: string): Promise<GameState> => {
     postId,
     viewerUsername: username,
     creatorUsername: game.creatorUsername || null,
+    isCreator,
     canEdit,
     canReveal,
     isConfigured: game.isConfigured,
@@ -167,10 +196,10 @@ export const buildGameState = async (postId: string): Promise<GameState> => {
 };
 
 export const saveGame = async (postId: string, setup: GameSetup) => {
-  const username = await reddit.getCurrentUsername();
+  const viewer = await getViewerIdentity();
   const stored = parseStoredGame((await redis.hGetAll(postKey(postId))) ?? {});
 
-  if (!username || username !== stored.creatorUsername) {
+  if (!isCreatorOf(stored, viewer)) {
     throw new Error('Only the creator can finish setting up this game.');
   }
 
@@ -186,7 +215,8 @@ export const saveGame = async (postId: string, setup: GameSetup) => {
   const sanitized = sanitizeSetup(setup);
   await redis.hSet(postKey(postId), {
     ...sanitized,
-    creatorUsername: stored.creatorUsername,
+    creatorId: stored.creatorId || viewer.userId || '',
+    creatorUsername: stored.creatorUsername || viewer.username || '',
     createdAt: stored.createdAt,
     isConfigured: 'true',
     isRevealed: 'false',
@@ -194,8 +224,8 @@ export const saveGame = async (postId: string, setup: GameSetup) => {
 };
 
 export const submitVote = async (postId: string, statementId: StatementId) => {
-  const username = await reddit.getCurrentUsername();
-  if (!username) {
+  const viewer = await getViewerIdentity();
+  if (!viewer.username) {
     throw new Error('Sign in to vote.');
   }
 
@@ -208,26 +238,26 @@ export const submitVote = async (postId: string, statementId: StatementId) => {
     throw new Error('This game has not been configured yet.');
   }
 
-  if (stored.creatorUsername === username) {
-    throw new Error('Creators cannot vote on their own game.');
+  if (isCreatorOf(stored, viewer)) {
+    throw new Error('Creators cannot vote on their own game. Use Reveal instead.');
   }
 
-  const existingVote = await redis.get(voteKey(postId, username));
+  const existingVote = await redis.get(voteKey(postId, viewer.username));
   if (existingVote !== null) {
     throw new Error('You already locked in a guess for this game.');
   }
 
-  await redis.set(voteKey(postId, username), String(statementId));
+  await redis.set(voteKey(postId, viewer.username), String(statementId));
   await redis.hSet(voteCountsKey(postId), {
     [statementId]: String((await readVoteCounts(postId))[statementId] + 1),
   });
 };
 
 export const revealLie = async (postId: string) => {
-  const username = await reddit.getCurrentUsername();
+  const viewer = await getViewerIdentity();
   const stored = parseStoredGame((await redis.hGetAll(postKey(postId))) ?? {});
 
-  if (!username || username !== stored.creatorUsername) {
+  if (!isCreatorOf(stored, viewer)) {
     throw new Error('Only the creator can reveal the lie.');
   }
 
@@ -237,6 +267,8 @@ export const revealLie = async (postId: string) => {
 
   await redis.hSet(postKey(postId), {
     ...stored,
+    creatorId: stored.creatorId || viewer.userId || '',
+    creatorUsername: stored.creatorUsername || viewer.username || '',
     isConfigured: 'true',
     isRevealed: 'true',
   });

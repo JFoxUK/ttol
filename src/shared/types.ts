@@ -9,6 +9,7 @@ export interface GameSetup {
 }
 
 export interface StoredGame extends GameSetup {
+  creatorId: string;
   creatorUsername: string;
   createdAt: string;
   isConfigured: boolean;
@@ -25,6 +26,7 @@ export interface GameState {
   postId: string;
   viewerUsername: string | null;
   creatorUsername: string | null;
+  isCreator: boolean;
   canEdit: boolean;
   canReveal: boolean;
   isConfigured: boolean;

@@ -7,12 +7,15 @@ export const createPost = async () => {
     day: 'numeric',
   })}`;
 
-  const creatorUsername = await reddit.getCurrentUsername();
+  const creatorUsername = (await reddit.getCurrentUsername()) ?? context.username ?? null;
   const post = await reddit.submitCustomPost({
     title,
   });
 
-  await initializePost(post.id, creatorUsername ?? null);
+  await initializePost(post.id, {
+    userId: context.userId ?? null,
+    username: creatorUsername,
+  });
 
   return {
     creatorUsername,

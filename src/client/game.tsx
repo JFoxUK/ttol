@@ -255,7 +255,7 @@ export function App() {
               <p className="muted tiny">Pick the lie. Results unlock after your guess.</p>
             </div>
 
-            {!game.hasVoted && !game.canReveal ? (
+            {!game.hasVoted && !game.isCreator ? (
               <>
                 <div className="statement-list compact">
                   {orderedStatements.map((statement) => (
@@ -294,7 +294,15 @@ export function App() {
                         className={`statement-card ${isUserChoice ? 'selected' : ''} ${revealLie ? 'correct' : ''}`}
                       >
                         <div className="statement-title">
-                          <strong>{isUserChoice ? 'Your guess' : 'Result'}</strong>
+                          <strong>
+                            {game.isCreator
+                              ? revealLie
+                                ? 'The lie'
+                                : 'Statement'
+                              : isUserChoice
+                                ? 'Your guess'
+                                : 'Result'}
+                          </strong>
                           <span className="badge">
                             {votes} · {percentage}%
                           </span>
@@ -312,11 +320,13 @@ export function App() {
                 <div className="status-line">
                   <p>
                     {game.isRevealed
-                      ? userPickedLie
-                        ? 'Nice read — you found the lie.'
-                        : 'The lie is out.'
-                      : game.canReveal
-                        ? 'Ready when you are.'
+                      ? game.isCreator
+                        ? 'You revealed the lie for everyone.'
+                        : userPickedLie
+                          ? 'Nice read — you found the lie.'
+                          : 'The lie is out.'
+                      : game.isCreator
+                        ? 'You can reveal the lie anytime — no vote needed.'
                         : 'Waiting on the creator reveal.'}
                   </p>
                 </div>
