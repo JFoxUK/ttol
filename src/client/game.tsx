@@ -28,23 +28,23 @@ type SetupStep = 0 | 1 | 2 | 3 | 4;
 const setupSteps = [
   {
     title: 'Name the round',
-    hint: 'Keep it short. Theme is optional.',
+    hint: 'This is what people see first on your post.',
   },
   {
     title: 'Truth #1',
-    hint: 'A true statement about yourself.',
+    hint: 'A real fact about you. Keep it short and believable.',
   },
   {
     title: 'Truth #2',
-    hint: 'Another true statement.',
+    hint: 'Another real fact. Make it different from the first.',
   },
   {
     title: 'The lie',
-    hint: 'Make it believable.',
+    hint: 'A false statement that still sounds plausible.',
   },
   {
     title: 'Ready to publish?',
-    hint: 'Check everything looks right.',
+    hint: 'Check everything looks right before sharing.',
   },
 ] as const;
 
@@ -286,17 +286,20 @@ export function App() {
                       autoFocus
                       value={setup.title}
                       maxLength={90}
+                      placeholder="e.g. Two truths and one lie"
                       onChange={(event) => updateSetup('title', event.target.value)}
                     />
+                    <span className="field-help">The headline shown at the top of the game.</span>
                   </label>
                   <label>
                     Theme
                     <input
                       value={setup.theme}
                       maxLength={40}
-                      placeholder="Optional"
+                      placeholder="Optional — e.g. Travel"
                       onChange={(event) => updateSetup('theme', event.target.value)}
                     />
+                    <span className="field-help">Optional category tag, like food, work, or dating.</span>
                   </label>
                 </div>
               ) : null}
@@ -308,9 +311,10 @@ export function App() {
                     autoFocus
                     value={setup.truth1}
                     maxLength={140}
-                    placeholder="A true statement"
+                    placeholder="e.g. I have lived in three countries"
                     onChange={(event) => updateSetup('truth1', event.target.value)}
                   />
+                  <span className="field-help">A true statement about you. Keep it interesting but believable.</span>
                 </label>
               ) : null}
 
@@ -321,9 +325,10 @@ export function App() {
                     autoFocus
                     value={setup.truth2}
                     maxLength={140}
-                    placeholder="Another true statement"
+                    placeholder="e.g. I once met my favourite band"
                     onChange={(event) => updateSetup('truth2', event.target.value)}
                   />
+                  <span className="field-help">Another true statement, different from the first.</span>
                 </label>
               ) : null}
 
@@ -334,34 +339,35 @@ export function App() {
                     autoFocus
                     value={setup.lie}
                     maxLength={140}
-                    placeholder="A believable lie"
+                    placeholder="e.g. I am afraid of roller coasters"
                     onChange={(event) => updateSetup('lie', event.target.value)}
                   />
+                  <span className="field-help">A false statement that still sounds real. You’ll reveal it later.</span>
                 </label>
               ) : null}
 
               {step === 4 ? (
                 <div className="review-list">
                   <div className="review-item">
-                    <span className="muted tiny">Title</span>
+                    <span className="muted tiny">Title — post headline</span>
                     <strong>{normalize(setup.title)}</strong>
                   </div>
                   {normalize(setup.theme) ? (
                     <div className="review-item">
-                      <span className="muted tiny">Theme</span>
+                      <span className="muted tiny">Theme — optional category tag</span>
                       <strong>{normalize(setup.theme)}</strong>
                     </div>
                   ) : null}
                   <div className="review-item">
-                    <span className="muted tiny">Truth #1</span>
+                    <span className="muted tiny">Truth #1 — real statement</span>
                     <strong>{normalize(setup.truth1)}</strong>
                   </div>
                   <div className="review-item">
-                    <span className="muted tiny">Truth #2</span>
+                    <span className="muted tiny">Truth #2 — real statement</span>
                     <strong>{normalize(setup.truth2)}</strong>
                   </div>
                   <div className="review-item lie">
-                    <span className="muted tiny">The lie</span>
+                    <span className="muted tiny">The lie — fake statement to guess</span>
                     <strong>{normalize(setup.lie)}</strong>
                   </div>
                 </div>

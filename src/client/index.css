@@ -215,6 +215,12 @@ button:hover:not(:disabled) {
   white-space: nowrap;
 }
 
+.theme-badge {
+  background: rgba(47, 227, 106, 0.18);
+  border: 1px solid rgba(47, 227, 106, 0.35);
+  color: #d8ffe6;
+}
+
 .primary {
   background: linear-gradient(135deg, var(--green), var(--green-deep));
   color: #041109;
@@ -303,6 +309,13 @@ button:hover:not(:disabled) {
   gap: 0.35rem;
   color: #dffff0;
   font-weight: 600;
+}
+
+.field-help {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
 .field-grid input,
